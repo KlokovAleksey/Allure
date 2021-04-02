@@ -1,7 +1,12 @@
 package ru.netology;
 
+import com.codeborne.selenide.logevents.SelenideLogger;
+import io.qameta.allure.selenide.AllureSelenide;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Keys;
+
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -10,7 +15,6 @@ import static com.codeborne.selenide.Condition.exactText;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selectors.withText;
 import static com.codeborne.selenide.Selenide.*;
-import static com.codeborne.selenide.Selenide.$;
 import static ru.netology.DataGenerator.Registration.generateByCard;
 
 public class CardDeliveryTest {
@@ -18,8 +22,18 @@ public class CardDeliveryTest {
     RegistrationInfo info = generateByCard();
     String date = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
 
+    @BeforeAll
+    static void setUpAll() {
+        SelenideLogger.addListener("allure", new AllureSelenide());
+    }
+
+    @AfterAll
+    static void tearDownAll() {
+        SelenideLogger.removeListener("allure");
+    }
+
     @Test
-    public void shouldRegistrationAndChangeDateMeeting(){
+    public void shouldRegistrationAndChangeDateMeeting() {
         open("http://localhost:9999/");
         $("[data-test-id=city] input").setValue(DataGenerator.Registration.generateByCard().getCity());
         $("[data-test-id=date] input").doubleClick().sendKeys(Keys.BACK_SPACE);
@@ -33,5 +47,4 @@ public class CardDeliveryTest {
         $(withText("Перепланировать")).click();
         $("[data-test-id=success-notification] .notification__title").shouldBe(visible, Duration.ofSeconds(15)).shouldHave(exactText("Успешно!"));
     }
-
 }
